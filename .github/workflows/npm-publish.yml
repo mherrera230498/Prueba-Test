@@ -24,7 +24,7 @@ jobs:
       - run: npx jest --coverage
       
   eslint:
-    needs: build-and-test     
+    #needs: build-and-test     
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -36,7 +36,7 @@ jobs:
       - run: npx eslint .
       
   snyk:
-    needs: eslint 
+    #needs: eslint 
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -45,5 +45,5 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=high --all-projects
+          args: --severity-threshold=medium --all-projects
 
