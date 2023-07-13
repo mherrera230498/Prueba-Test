@@ -59,8 +59,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         
-      - name: Get current date
+      - name: Get current date        
         id: date
+        if: github.event_name != 'pull_request'
         run: echo "now=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: Log into registry ${{ env.REGISTRY }}
@@ -73,6 +74,7 @@ jobs:
 
       - name: Extract Docker metadata
         id: meta
+        if: github.event_name != 'pull_request'
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
