@@ -3,6 +3,8 @@ name: Node.js Package
 on:
   #release:
   #  types: [created]
+  #push:
+  #  branches: [ main ]  
   pull_request:
     branches: [ main ]
   
@@ -22,8 +24,9 @@ jobs:
       - run: npx jest --coverage
       
   eslint:
-    runs-on: ubuntu-latest
     needs: build-and-test     
+    if: always()
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -34,6 +37,7 @@ jobs:
       
   snyk:
     needs: eslint 
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
