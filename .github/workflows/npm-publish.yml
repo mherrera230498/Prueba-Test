@@ -59,7 +59,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=high --all-projects
+          args: --severity-threshold=medium --all-projects
           
   docker-build:
     if: always()
@@ -85,8 +85,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ env.IMAGE_VERSION }},enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+            type=raw,value=${{ env.IMAGE_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@v4
@@ -99,7 +99,7 @@ jobs:
   dev-deploy:
     if: |
       always() &&
-      ${{ github.ref == format('refs/heads/{0}', 'main') }}
+      github.ref == 'refs/heads/main'
     needs: [docker-build]
     environment: 
       name: dev
@@ -128,7 +128,7 @@ jobs:
   prod-deploy:
     if: |
       always() &&
-      ${{ github.ref == format('refs/heads/{0}', 'main') }}
+      github.ref == 'refs/heads/main'
     needs: [dev-deploy]
     environment: 
       name: prod
