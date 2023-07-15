@@ -1,5 +1,5 @@
 {{- $name := .Release.Name -}}
-{{- $svcPort := .Values.service.port -}}
+{{- $containerPort := .Values.service.targetPort -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,7 +28,7 @@ spec:
                memory: {{ .Values.image.requests.memory }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.service.targetPort }}
           {{- if .Values.image.env.enabled }}
           env:
             {{- range .Values.image.env.configMaps }}
@@ -51,7 +51,7 @@ spec:
           livenessProbe:
             httpGet:
               path: {{ .path }}
-              port: {{ $svcPort }}            
+              port: {{ $containerPort }}            
             initialDelaySeconds: {{ .initialDelaySeconds }}
             periodSeconds: {{ .periodSeconds }}
           {{- end }}
@@ -59,7 +59,7 @@ spec:
           readinessProbe:
             httpGet:
               path: {{ .path }}
-              port: {{ $svcPort }}
+              port: {{ $containerPort }}
             initialDelaySeconds: {{ .initialDelaySeconds }}
             periodSeconds: {{ .periodSeconds }}
           {{- end }}
@@ -67,7 +67,7 @@ spec:
           startupProbe:
             httpGet:
               path: {{ .path }}
-              port: {{ $svcPort }}
+              port: {{ $containerPort }}
             failureThreshold: {{ .failureThreshold }}
             periodSeconds: {{ .periodSeconds }}
           {{- end }}
