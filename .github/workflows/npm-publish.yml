@@ -50,7 +50,11 @@ jobs:
       
   snyk:
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@master
@@ -75,11 +79,13 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: snyk-sast.sarif
+          category: sast
       - name: Upload SCA result to GitHub Code Scanning
         if: always()
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: snyk-sca.sarif
+          category: sca
           
   docker-build:
     if: always()
