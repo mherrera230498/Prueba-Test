@@ -90,6 +90,24 @@ jobs:
   dev-deploy:
     if: always()
     needs: [docker-build]
+    environment: 
+      name: dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
+      - run: kubectl get svc
+      - run: helm version
+  prod-deploy:
+    if: always()
+    needs: [dev-deploy]
+    environment: 
+      name: prod
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS Credentials
