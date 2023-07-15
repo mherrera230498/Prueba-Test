@@ -9,7 +9,7 @@ inputs:
     default: default
   helm_chart_directory:
     required: true
-  image:
+  image_repository:
     required: true
   image_tag:
     required: true
@@ -21,9 +21,11 @@ runs:
   steps:
     - run: echo "DEPLOYMENT_NAME_LOWERCASE=$(echo ${{ inputs.deployment_name }} | awk '{print tolower($0)}')" >> $GITHUB_ENV
       shell: bash
+    - run: echo "IMAGE_REPOSITORY_LOWERCASE=$(echo ${{ inputs.image_repository }} | awk '{print tolower($0)}')" >> $GITHUB_ENV
+      shell: bash
     - run: |
           helm upgrade --install -n ${{ inputs.helm_namespace }} --create-namespace $DEPLOYMENT_NAME_LOWERCASE ${{ inputs.helm_chart_directory }} \
-          --set image.repository=${{ inputs.image }} \
+          --set image.repository=$IMAGE_REPOSITORY_LOWERCASE \
           --set image.tag=${{ inputs.image_tag }}
       shell: bash
     - run: sleep 10 && helm test $DEPLOYMENT_NAME_LOWERCASE -n ${{ inputs.helm_namespace }}
