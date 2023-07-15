@@ -3,8 +3,8 @@ name: Node.js Package
 on:
   push:
     branches: [ main ]  
-  #pull_request:
-  #  branches: [ main ]
+  pull_request:
+    branches: [ main ]
   
 env:
   NODE_VERSION: 18
@@ -16,39 +16,50 @@ env:
   HELM_CHART_DIRECTORY: node_chart/
 
 jobs:
-  #build-and-test:
-  #  if: always()
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@v3
-  #    - uses: actions/setup-node@v3
-  #      with:
-  #        node-version: ${{ env.NODE_VERSION }}
-  #    - run: npm ci
-  #    - run: npm run build --if-present
-  #    - run: npx jest --coverage
-  #    
-  #eslint:
-  #  if: always()
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@v3
-  #    - uses: actions/setup-node@v3
-  #      with:
-  #        node-version: ${{ env.NODE_VERSION }}
-  #    - run: npm ci
-  #    - run: npx eslint .
-  #    
-  #snyk:
-  #  if: always()
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@master
-  #    - uses: snyk/actions/node@master
-  #      env:
-  #        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-  #      with:
-  #        args: --severity-threshold=high --all-projects
+  build-and-test:
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Clean install modules
+        run: npm ci
+      - name: Run build
+        run: npm run build --if-present
+      - name: Execute jest test with coverage
+        run: npx jest --coverage
+      
+  eslint:
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Clean install  moduels
+        run: npm ci
+      - name: Checkout repository
+        run: npx eslint .
+      
+  snyk:
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@master
+      - name: Perform SAST and SCA
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --all-projects
           
   docker-build:
     if: always()
@@ -94,14 +105,16 @@ jobs:
       name: dev
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-      - run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
+      - name: Set kubectl eks context
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
       - name: Deploy helm chart to EKS
         uses: ./.github/actions/helm-eks-deployment
         with:
@@ -109,28 +122,33 @@ jobs:
           helm_chart_directory: ${{ env.HELM_CHART_DIRECTORY }}
           image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           image_tag: ${{ env.IMAGE_VERSION }}
-          execute_helm_test: false
+          execute_helm_test: ${{ vars.EXECUTE_HELM_TEST }}
 
           
-  #prod-deploy:
-  #  if: |
-  #    always() &&
-  #    ${{ github.ref == 'refs/heads/main' }}
-  #  needs: [dev-deploy]
-  #  environment: 
-  #    name: prod
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@v3
-  #    - name: Configure AWS Credentials
-  #      uses: aws-actions/configure-aws-credentials@v2
-  #      with:
-  #        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #        aws-region: ${{ env.AWS_REGION }}
-  #    - run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
-  #    - run: |
-  #        helm upgrade --install -n {{ vars.HELM_NAMESPACE }} --create-namespace ${{ github.repository }} ${{ env.HELM_CHART_DIRECTORY }} \
-  #        --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
-  #        --set image.tag=${{ env.IMAGE_VERSION }}
-  #    - run: sleep 10 && helm test ${{ github.repository }} -n {{ vars.HELM_NAMESPACE }}
+  prod-deploy:
+    if: |
+      always() &&
+      ${{ github.ref == 'refs/heads/main' }}
+    needs: [dev-deploy]
+    environment: 
+      name: prod
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Set kubectl eks context
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
+      - name: Deploy helm chart to EKS
+        uses: ./.github/actions/helm-eks-deployment
+        with:
+          helm_namespace: ${{ vars.HELM_NAMESPACE }}
+          helm_chart_directory: ${{ env.HELM_CHART_DIRECTORY }}
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          image_tag: ${{ env.IMAGE_VERSION }}
+          execute_helm_test: ${{ vars.EXECUTE_HELM_TEST }}
