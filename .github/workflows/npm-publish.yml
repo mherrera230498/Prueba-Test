@@ -101,11 +101,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       - run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
-      - run: |
-          helm upgrade --install -n {{ vars.HELM_NAMESPACE }} --create-namespace ${{ github.repository }} ${{ env.HELM_CHART_DIRECTORY }} \
-          --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
-          --set image.tag=${{ env.IMAGE_VERSION }}
-      - run: sleep 10 && helm test ${{ github.repository }} -n {{ vars.HELM_NAMESPACE }}
+      - name: Deploy helm chart to EKS
+        uses: actions/helm-eks-deployment
+        with:
+          helm_namespace: ${{ vars.HELM_NAMESPACE }}
+          helm_chart_directory: ${{ env.HELM_CHART_DIRECTORY }}
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          image_tag: ${{ env.IMAGE_VERSION }}
+          execute_helm_test: false
+
           
   #prod-deploy:
   #  if: |
@@ -116,6 +120,7 @@ jobs:
   #    name: prod
   #  runs-on: ubuntu-latest
   #  steps:
+  #    - uses: actions/checkout@v3
   #    - name: Configure AWS Credentials
   #      uses: aws-actions/configure-aws-credentials@v2
   #      with:
@@ -123,4 +128,8 @@ jobs:
   #        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   #        aws-region: ${{ env.AWS_REGION }}
   #    - run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
-  #    - run: kubectl get svc
+  #    - run: |
+  #        helm upgrade --install -n {{ vars.HELM_NAMESPACE }} --create-namespace ${{ github.repository }} ${{ env.HELM_CHART_DIRECTORY }} \
+  #        --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+  #        --set image.tag=${{ env.IMAGE_VERSION }}
+  #    - run: sleep 10 && helm test ${{ github.repository }} -n {{ vars.HELM_NAMESPACE }}
