@@ -102,7 +102,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
       - name: Deploy helm chart to EKS
-        uses: actions/helm-eks-deployment
+        uses: ./.github/actions/helm-eks-deployment
         with:
           helm_namespace: ${{ vars.HELM_NAMESPACE }}
           helm_chart_directory: ${{ env.HELM_CHART_DIRECTORY }}
