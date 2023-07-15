@@ -1,7 +1,7 @@
 name: Deploy helm chart to EKS
 description: 'Deploy helm chart to eks'
 inputs:
-  app_name:
+  deployment_name:
     required: false
     default: ${{ github.event.repository.name }}
   helm_namespace:
@@ -19,8 +19,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - run: DEPLOYMENT_NAME_LOWERCASE=$(echo ${{ inputs.deployment_name }} | awk '{print tolower($0)}')
     - run: |
-          helm upgrade --install -n ${{ inputs.helm_namespace }} --create-namespace ${{ inputs.app_name }} ${{ inputs.helm_chart_directory }} \
+          helm upgrade --install -n ${{ inputs.helm_namespace }} --create-namespace $DEPLOYMENT_NAME_LOWERCASE ${{ inputs.helm_chart_directory }} \
           --set image.repository=${{ inputs.image }} \
           --set image.tag=${{ inputs.image_tag }}
       shell: bash
