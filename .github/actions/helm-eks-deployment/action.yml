@@ -26,6 +26,6 @@ runs:
           --set image.repository=${{ inputs.image }} \
           --set image.tag=${{ inputs.image_tag }}
       shell: bash
-    - run: sleep 10 && helm test ${{ inputs.app_name }} -n ${{ inputs.helm_namespace }}
-      if: inputs.execute_helm_test
+    - run: sleep 10 && helm test $DEPLOYMENT_NAME_LOWERCASE -n ${{ inputs.helm_namespace }}
+      if: inputs.execute_helm_test == 'true'
       shell: bash
