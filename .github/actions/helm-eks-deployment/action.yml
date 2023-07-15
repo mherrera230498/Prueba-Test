@@ -19,7 +19,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: DEPLOYMENT_NAME_LOWERCASE=$(echo ${{ inputs.deployment_name }} | awk '{print tolower($0)}')    
+    - run: echo "DEPLOYMENT_NAME_LOWERCASE=$(echo ${{ inputs.deployment_name }} | awk '{print tolower($0)}')" >> $GITHUB_ENV
       shell: bash
     - run: |
           helm upgrade --install -n ${{ inputs.helm_namespace }} --create-namespace $DEPLOYMENT_NAME_LOWERCASE ${{ inputs.helm_chart_directory }} \
