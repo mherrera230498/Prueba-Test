@@ -13,6 +13,7 @@ env:
   IMAGE_VERSION: ${{ format('{0}-{1}', github.run_id, github.run_number) }}
   AWS_REGION: us-west-2
   EKS_CLUSTER_NAME: my_eks_cluster
+  HELM_CHART_DIRECTORY: node_chart/
 
 jobs:
   #build-and-test:
@@ -101,9 +102,10 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
       - run: |
-          helm -n my-namespace upgrade --install --create-namespace my-app node_chart/ \
+          helm upgrade --install -n {{ vars.HELM_NAMESPACE }} --create-namespace ${{ github.repository }} ${{ env.HELM_CHART_DIRECTORY }} \
           --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
           --set image.tag=${{ env.IMAGE_VERSION }}
+      - run: sleep 10 && helm test ${{ github.repository }} -n {{ vars.HELM_NAMESPACE }}
           
   #prod-deploy:
   #  if: |
