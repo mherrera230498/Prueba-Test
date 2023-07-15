@@ -55,6 +55,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@master
       - name: Perform SAST
+        if: always()
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -62,6 +63,7 @@ jobs:
           command: code test
           args: --severity-threshold=medium --sarif-file-output=snyk-sast.sarif
       - name: Perform SCA
+        if: always()
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
