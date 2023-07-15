@@ -63,7 +63,7 @@ jobs:
           
   docker-build:
     if: always()
-    #needs: [build-and-test, eslint, snyk]
+    needs: [build-and-test, eslint, snyk]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -120,7 +120,7 @@ jobs:
         with:
           helm_namespace: ${{ vars.HELM_NAMESPACE }}
           helm_chart_directory: ${{ env.HELM_CHART_DIRECTORY }}
-          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          image_repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           image_tag: ${{ env.IMAGE_VERSION }}
           execute_helm_test: ${{ vars.EXECUTE_HELM_TEST }}
 
@@ -149,6 +149,6 @@ jobs:
         with:
           helm_namespace: ${{ vars.HELM_NAMESPACE }}
           helm_chart_directory: ${{ env.HELM_CHART_DIRECTORY }}
-          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          image_repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           image_tag: ${{ env.IMAGE_VERSION }}
           execute_helm_test: ${{ vars.EXECUTE_HELM_TEST }}
