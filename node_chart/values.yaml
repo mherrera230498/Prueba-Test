@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: docker.io/library/devsu
+  repository: ghcr.io/mherrera230498/prueba-test
   pullPolicy: IfNotPresent
   tag: "latest"
   requests:    
@@ -20,16 +20,23 @@ image:
       - name: DATABASE_PASSWORD
         keyRef: database_password
 
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+  nodePort: 30000
+  externalIp: "192.168.49.2"
+  annotations: 
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-type: "internal"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
 
-configMap:
-  data:
-    work_environment: helm
-
-secret:
-  data:
-    database_name: Li9kZXZEb2NrZXIuc3FsaXRl
-    database_user: ZGJVc2Vy
-    database_password: ZGJQYXNz
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 50
+  # targetMemoryUtilizationPercentage: 50
 
 probes:
   enabled: true
@@ -46,26 +53,24 @@ probes:
     failureThreshold: 3
     periodSeconds: 3
 
-service:
-  type: NodePort
-  port: 8000
-  nodePort: 30000
+configMap:
+  data:
+    work_environment: helm
 
-autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 4
-  targetCPUUtilizationPercentage: 50
-  # targetMemoryUtilizationPercentage: 50
+secret:
+  data:
+    database_name: Li9kZXZEb2NrZXIuc3FsaXRl
+    database_user: ZGJVc2Vy
+    database_password: ZGJQYXNz
 
 ingress:
-  enabled: true
+  enabled: false
   className: "nginx"
   annotations: 
     nginx.ingress.kubernetes.io/rewrite-target: /$1
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: "devsu-test"
+    - host: "test.host"
       paths:
         - path: /(.*)
           pathType: Prefix
