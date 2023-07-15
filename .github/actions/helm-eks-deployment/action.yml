@@ -23,5 +23,7 @@ runs:
           helm upgrade --install -n ${{ inputs.helm_namespace }} --create-namespace ${{ inputs.app_name }} ${{ inputs.helm_chart_directory }} \
           --set image.repository=${{ inputs.image }} \
           --set image.tag=${{ inputs.image_tag }}
+      shell: bash
     - run: sleep 10 && helm test ${{ inputs.app_name }} -n ${{ inputs.helm_namespace }}
       if: inputs.execute_helm_test
+      shell: bash
