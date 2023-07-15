@@ -3,7 +3,7 @@ description: 'Deploy helm chart to eks'
 inputs:
   app_name:
     required: false
-    default: ${{ github.repository }}
+    default: ${{ github.event.repository.name }}
   helm_namespace:
     required: false
     default: default
