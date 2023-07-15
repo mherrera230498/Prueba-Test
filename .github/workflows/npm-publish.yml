@@ -75,6 +75,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ env.IMAGE_VERSION }},enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@v4
@@ -102,7 +103,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
       - name: Deploy helm chart to EKS
-        uses: ./.github/actions/helm-eks-deployment
+        uses: ./.github/actions/helm-eks-deployment.yml
         with:
           helm_namespace: ${{ vars.HELM_NAMESPACE }}
           helm_chart_directory: ${{ env.HELM_CHART_DIRECTORY }}
