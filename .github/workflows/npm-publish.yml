@@ -99,7 +99,7 @@ jobs:
   dev-deploy:
     if: |
       always() &&
-      ${{ github.ref == 'refs/heads/main' }}
+      ${{ github.ref == format('refs/heads/{0}', 'main') }}
     needs: [docker-build]
     environment: 
       name: dev
@@ -128,7 +128,7 @@ jobs:
   prod-deploy:
     if: |
       always() &&
-      ${{ github.ref == 'refs/heads/main' }}
+      ${{ github.ref == format('refs/heads/{0}', 'main') }}
     needs: [dev-deploy]
     environment: 
       name: prod
